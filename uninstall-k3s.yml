@@ -1,0 +1,48 @@
+---
+- name: Uninstall K3s
+  hosts: "{{ install_host | default('nodes')}}"
+  become: true
+  gather_facts: false
+
+  vars:
+    rm_dirs:
+      - /etc/ceph
+      - /etc/cni
+      - /etc/kubernetes
+      - /etc/rancher
+      - /opt/cni
+      - /opt/rke
+      - /run/secrets/kubernetes.io
+      - /run/calico
+      - /run/flannel
+      - /var/lib/calico
+      - /var/lib/etcd
+      - /var/lib/cni
+      - /var/lib/kubelet
+      - /var/lib/rancher
+      - /var/log/containers
+      - /var/log/kube-audit
+      - /var/log/pods
+      - /var/run/calico
+
+  tasks:
+    - name: Uninstall workers
+      ansible.builtin.command:
+        cmd: "{{ uninstall_cmd }}"
+        removes: "{{ uninstall_cmd }}"
+      when: inventory_hostname in groups['workers']
+
+    - name: Uninstall master
+      ansible.builtin.command:
+        cmd: "{{ uninstall_cmd }}"
+        removes: "{{ uninstall_cmd }}"
+      when: inventory_hostname in groups['master']
+
+    - name: Clean up old directories
+      ansible.builtin.file:
+        path: "{{ rm_dir }}"
+        state: absent
+        force: true
+      with_items: "{{ rm_dirs }}"
+      loop_control:
+        loop_var: rm_dir

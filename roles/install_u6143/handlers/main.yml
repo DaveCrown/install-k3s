@@ -1,0 +1,12 @@
+---
+- name: Systemd_reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+  listen: manage_service
+
+- name: Start_rc-local
+  ansible.builtin.service:
+    name: rc-local
+    state: restarted
+    enabled: true
+  listen: manage_service

@@ -1,0 +1,75 @@
+---
+- name: Install K3s
+  hosts: "{{ install_host | default('nodes')}}"
+  become: true
+  gather_facts: true
+
+  vars:
+    master_node: node0
+    disable_k3s_plugins:
+      - servicelb
+      - traefik
+
+    kube_config_vars:
+      file: "~/.kube/config"
+      # set a context name - uses default of default
+      # context: default
+      # set a user - uses default of default
+      # user: default
+
+  tasks:
+
+    - name: Get the username running the play
+      become: false
+      local_action: command whoami
+      register: local_user
+      changed_when: false
+
+    - name: Create a fact for the usrename from the local env
+      ansible.builtin.set_fact:
+        local_user_name: "{{ local_user.stdout }}"
+
+    - name: Prep hosts
+      ansible.builtin.include_role:
+        name: prep_hosts
+      when: install_prereqs | default(true)
+
+    - name: Install u9143 drivers
+      ansible.builtin.include_role:
+        name: install_u6143
+      when: configure_u6143 | default(false)
+
+    - name: Install K3s Master
+      ansible.builtin.include_role:
+        name: install_master
+      when: inventory_hostname in groups['master']
+
+    - name: Get config files
+      ansible.builtin.include_role:
+        name: get_config_files
+      when: inventory_hostname in groups['master']
+      run_once: true
+
+    - name: Build Kube Config
+      ansible.builtin.include_role:
+        name: build_kube_config
+      when:
+        - inventory_hostname in groups['master']
+        - build_config | default(false)
+      run_once: true
+
+    - name: Install work nodes
+      ansible.builtin.include_role:
+        name: install_worker
+      when: inventory_hostname in groups['workers']
+
+    - name: Clean Up Secrets
+      ansible.builtin.file:
+        path: "{{ work_dir }}"
+        state: absent
+        force: true
+      run_once: true
+      delegate_to: 127.0.0.1
+      become: false
+      changed_when: false
+

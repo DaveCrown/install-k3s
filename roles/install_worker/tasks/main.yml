@@ -1,0 +1,20 @@
+---
+
+- name: Get node token value
+  ansible.builtin.set_fact:
+    install_worker_node_token: "{{ lookup('file', work_dir + '/node-token') }}"
+
+- name: Get installer
+  ansible.builtin.get_url:
+    url: "{{ k3s_url }}"
+    dest: "{{ install_script }}"
+    mode: '0755'
+
+- name: Install K3s worker nodes
+  ansible.builtin.command:
+    cmd: "{{ install_script }}"
+    creates: "{{ uninstall_cmd }}"
+  environment:
+    K3S_URL: https://{{ hostvars[master_node]['ansible_host'] }}:6443
+    K3S_TOKEN: "{{ install_worker_node_token }}"
+  throttle: 1

@@ -1,0 +1,8 @@
+---
+prep_hosts_pkgs:
+  - git
+  - raspi-config
+  - build-essential
+  - nfs-common
+  - net-tools
+  - htop

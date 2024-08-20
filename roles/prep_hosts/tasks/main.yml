@@ -1,0 +1,44 @@
+---
+- name: Create ansible user
+  ansible.builtin.user:
+    name: ansible
+    groups:
+      - sudo
+  when: manage_service_account | default(true)
+
+- name: Set a fact for the ssh_key file path
+  ansible.builtin.set_fact:
+    prep_hosts_path: "~/.ssh/{{ id_ed25519.pub | default('id_ed25519.pub') }}"
+  
+
+- name: Add authorized keys
+  ansible.builtin.authorized_key:
+    user: ansible
+    key: "{{ lookup('file', prep_hosts_path) }}"
+
+- name: Make ansible sudoless
+  ansible.builtin.lineinfile:
+    dest: "/etc/sudoers" # path: in version 2.3
+    state: "present"
+    regexp: "^%ansible"
+    line: "%ansible ALL=(ALL) NOPASSWD: ALL"
+  when: service_account_nopasswd | default(true)
+
+- name: Configure Hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+    update_cache: true
+    only_upgrade: true
+
+- name: Install Things
+  ansible.builtin.apt:
+    name: "{{ pkg }}"
+    state: present
+  with_items: "{{ prep_hosts_pkgs }}"
+  loop_control:
+    loop_var: pkg

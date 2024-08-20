@@ -1,0 +1,25 @@
+---
+- name: Generate Args
+  ansible.builtin.set_fact:
+    install_master_args_disable: "{{ install_master_args_disable | default('') + \" --disable \" + plugin }}"
+  when: disable_k3s_plugins| length > 0
+  with_items: "{{ disable_k3s_plugins }}"
+  loop_control:
+    loop_var: plugin
+
+- name: Get installer
+  ansible.builtin.get_url:
+    url: "{{ k3s_url }}"
+    dest: "{{ install_script }}"
+    mode: '0755'
+
+- name: Install K3s Master Node
+  ansible.builtin.command:
+    cmd: "{{ install_script }}{{ install_master_args_disable }}"
+    creates: /var/lib/rancher/k3s/server/node-token
+
+
+# - name: Install K3s Master
+#   ansible.builtin.command:
+#     cmd: curl -sfL https://get.k3s.io | sh -s -  {{ install_master_args_disable }}
+#     creates: /var/lib/rancher/k3s/server/node-token

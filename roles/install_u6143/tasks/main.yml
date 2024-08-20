@@ -1,0 +1,34 @@
+---
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: /opt/repos
+    state: directory
+    mode: '0755'
+
+- name: Pull down io repo
+  ansible.builtin.git:
+    repo: "{{ install_u6143_repo }}"
+    dest: "{{ install_u6143_path }}"
+
+- name: Enable i2c
+  ansible.builtin.command:
+    cmd: sudo raspi-config nonint do_i2c 0
+  changed_when: false
+
+- name: Compile tool
+  ansible.builtin.command:
+    cmd: sudo make clean && sudo make
+    chdir: "{{ install_u6143_path }}/C"
+  notify: manage_service
+
+- name: Copy rc.local templates
+  ansible.builtin.template:
+    src: "{{ file.template }}"
+    dest: "{{ file.path }}"
+    owner: root
+    group: root
+    mode: "{{ file.perms }}"
+  with_items: "{{ install_u6143_templates }}"
+  loop_control:
+    loop_var: file
+  notify: manage_service

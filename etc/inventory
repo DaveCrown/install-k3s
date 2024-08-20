@@ -1,0 +1,12 @@
+[master]
+node0 ansible_host=10.3.40.10 ansible_user=ansible 
+
+[workers]
+node1 ansible_host=10.3.40.11 ansible_user=ansible 
+node2 ansible_host=10.3.40.12 ansible_user=ansible
+node3 ansible_host=10.3.40.13 ansible_user=ansible
+node4 ansible_host=10.3.40.14 ansible_user=ansible
+
+[nodes:children]
+master
+workers

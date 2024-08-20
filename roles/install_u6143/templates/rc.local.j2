@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+cd {{ install_u6143_path }}/C
+sudo make clean 
+sudo make 
+sudo ./display &
+
+exit 0

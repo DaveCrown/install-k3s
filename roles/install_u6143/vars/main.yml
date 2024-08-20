@@ -1,0 +1,10 @@
+---
+install_u6143_repo: https://github.com/UCTRONICS/U6143_ssd1306.git
+install_u6143_path: /opt/repos/u6143
+install_u6143_templates:
+  - template: rc.local.j2
+    path: /etc/rc.local
+    perms: '0755'
+  - template: rc-local.service.j2
+    path: /etc/systemd/system/rc-local.service
+    perms: '0644'

@@ -22,7 +22,7 @@ To use the installation play:
 I use `ansible-playbook install-k3s.yml -e '{ "build_config": true, "install_u6143": true}' `
 
 ### Uninstall
-This is pretty simple, just call the `uninstall-k3s.yml` play like so. 
+This is pretty simple, just call the `uninstall-k3s.yml` play like so. It will also remove most of the on disk configs
 
 `ansible-playbook uninstall-k3s.yml`
 

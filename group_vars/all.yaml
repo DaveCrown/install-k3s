@@ -1,0 +1,29 @@
+---
+# # prep_host flags
+# #
+# #for pies with a u643 lcd screen, set to true
+# configure_u6143: false
+# #
+# #install the prereques? Leave to true, this is just a short cut 
+# install_prereqs: true
+
+# vars for controlling token files
+#
+# where do i want to work out of
+work_dir: "{{ playbook_dir }}/work/"
+#
+config_files:
+#where does the token file sit on the control node
+  - file: node-token
+    path: /var/lib/rancher/k3s/server
+  - file: k3s.yaml
+    path: /etc/rancher/k3s
+
+
+
+#k3s vars
+#
+#url for the k3s script. this shouldnt have to be changed
+k3s_url: https://get.k3s.io
+#script file name
+install_script: "{{ ansible_env.HOME }}/install_k3s.sh"

@@ -1,0 +1,25 @@
+---
+- name: Load Config File vars
+  ansible.builtin.include_vars:
+    file: "{{work_dir}}/k3s.yaml"
+    name: kube_config_file
+
+- name: Write base config file from template
+  ansible.builtin.replace:
+    path: "{{ work_dir }}/k3s.yaml"
+    regexp: '127.0.0.1'
+    replace: '{{ ansible_host }}'
+  run_once: true
+  delegate_to: 127.0.0.1
+  become: false
+
+- name: Copy kube config to .kube
+  ansible.builtin.copy:
+    src: "{{ work_dir }}/k3s.yaml"
+    dest: "~/.kube/config"
+    owner: "{{ local_user_name }}"
+    mode: '0600'
+    backup: true
+  run_once: true
+  delegate_to: 127.0.0.1
+  become: false
