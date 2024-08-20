@@ -89,10 +89,13 @@ In the play there are a few main vars
 
 ## To do's
 
-On my list is to include deploying and configuring:
- - ingress-nginx
- - metallb
- - dynamic nfs PVC provsioner
+- [ ] Install / Deploy / Configure the following
+  - [ ] ingress-nginx
+  - [ ] metallb
+  - [ ] dynamic nfs PVC provisioner
+- [ ] test coverage
+- [ ] Vagrant file
+- [ ] Test Coverage
 
 ## Legal
 I am in no away affiliated with any company , nor did I write the fix. I just wrote an ansible play making deploying a home lab easier and share it with the world. Use this as your own peril with good backups. Don't blame me if this burns down your environment, your house, or anything you were warned. I take no responsibility or liability.
