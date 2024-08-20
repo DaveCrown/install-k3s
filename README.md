@@ -5,7 +5,8 @@
 
 This play installs a Kubernetes cluster using k3's on one master node and how ever many workers you define. I developed this for my home environment and making it easier to redeploy a k3s cluster on raspbery pi's.  The play is fairly idempotent, as it uses the presence of the node-token file and agent uninstall script to detect if you have k3's install
 
-## Requiremnets
+## Requirements
+
 Right now I'm only targeting ubuntu. There are no guard rails to stop this from running on other distributions. I make the assumption of a single master and multiple workers.
 
 ## Usage
@@ -14,6 +15,7 @@ Right now I'm only targeting ubuntu. There are no guard rails to stop this from 
 > Since this play is meant for a home lab, it will copy the default k3s.yml and node-node token to a directory called work while the play is 
 
 ### Installation
+
 To use the installation play:
 1. build your inventory out
 1. call `ansible-play install-k3s.yml -e '{ any flags here in json format }'`
@@ -22,11 +24,13 @@ To use the installation play:
 I use `ansible-playbook install-k3s.yml -e '{ "build_config": true, "install_u6143": true}' `
 
 ### Uninstall
+
 This is pretty simple, just call the `uninstall-k3s.yml` play like so. It will also remove most of the on disk configs
 
 `ansible-playbook uninstall-k3s.yml`
 
 ### Prereqs
+
 This will do the following:
 - Set the hostname of each node to whats defined in the inventory
 - Create a service account with the following defaults
@@ -41,6 +45,7 @@ To manage this, use the flags in the [CLI Section](#CLI)
 ## Inventory
 
 ### Nodes
+
 This section has two groups, master and workers. Its expected that you use names for the nodes as it updates nodes hostname to the node name defined in the inventory file for the sake of making it wasier to work with k8s. 
 
 As I'm planing to expand this to apply inital configs of the cluster, please leave the `nodes:children` intact.
@@ -63,6 +68,7 @@ workers
 ## Vars
 
 ### CLI
+
 | Option | Type| Usage | Default | Notes|
 | --- | --- | --- | --- | --- |
 | manage_service_account | bool | should the play manage service account for thenodes os| `true` | |
@@ -82,6 +88,7 @@ In the play there are a few main vars
 | disable_k3s_plugins | A list of k3s plugins to disable | servicelb and traefik are disabled to i can install metallb and ingress-nginx |
 
 ## To do's
+
 On my list is to include deploying and configuring:
  - ingress-nginx
  - metallb
