@@ -11,7 +11,7 @@ Right now I'm only targeting ubuntu. There are no guard rails to stop this from 
 
 ## Usage
 
-> [!CAUTION] A word on cluster secrets  
+> [!CAUTION]  
 >
 > Since this play is meant for a home lab, it will copy the default k3s.yml and node-node token to a directory called work while the play is running. While the play will delete work dir when done, it still creates some exposure. You have been thusly warned. 
 
