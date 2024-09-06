@@ -1,0 +1,91 @@
+- name: Configure K3s
+  hosts: localhost
+  become: false
+  gather_facts: false
+
+  vars:
+
+    kube_config_vars:
+      file: "~/.kube/config"
+      # set a context name - uses default of default
+      # context: default
+      # set a user - uses default of default
+      # user: default
+  pre_tasks:
+    - name: Import Plugin Map
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/plugin_map.yaml"
+        name: plugin_map
+
+    - ansible.builtin.debug:
+        var: plugin_map
+        verbosity: 2
+
+    - name: Fetch cluster config files
+      ansible.builtin.include_role:
+        name: get_cluster_config
+      when: (config_repo is defined) or (config_dir is defined)
+
+  tasks:
+    - name: Dump Manifests
+      ansible.builtin.debug:
+        msg:  "{{ cluster_config | get_manifests(plugin_map) }}"
+        verbosity: 2
+    
+    - name: Dump Manifest Configs
+      ansible.builtin.debug:
+        msg:  "{{ cluster_config | get_manifest_configs(plugin_map) }}"
+        verbosity: 2
+      
+    - name: Apply Manifests
+      kubernetes.core.k8s:
+        src: "{{ manifest }}"
+        state: present
+      with_items: "{{ cluster_config | get_manifests(plugin_map) }}"
+      loop_control:
+        loop_var: manifest
+
+    - name: Apply Configs for Manifests
+      kubernetes.core.k8s:
+        src: "{{playbook_dir}}/config/{{ manifest_config }}"
+        state: present
+      with_items: "{{ cluster_config | get_manifest_configs(plugin_map) }}"
+      loop_control:
+        loop_var: manifest_config
+
+    - name: Add helm repos
+      kubernetes.core.helm_repository:
+        repo_name: "{{ repo.name }}"
+        repo_url: "{{ repo.url }}"
+      with_items: "{{ cluster_config | get_helm_repos(plugin_map) | dict2items(key_name='name',value_name='url') }}"
+      loop_control:
+        loop_var: repo
+
+    - name: Create a k8s namespace
+      kubernetes.core.k8s:
+        name: "{{ namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+      with_items: "{{ cluster_config | get_helm_namespaces(plugin_map) }}"
+      loop_control:
+        loop_var: namespace
+
+    - name: Set the Halm Chart fact
+      ansible.builtin.set_fact:
+        charts: "{{ cluster_config | get_helm_charts(plugin_map,playbook_dir) }}"
+
+    - debug:
+       msg : "{{ charts.0.values | type_debug }}"
+       verbosity: 2
+
+    - name: Apply Helm Charts
+      kubernetes.core.helm:
+        name: "{{ chart.name  }}"
+        chart_ref: "{{ chart.ref }}"
+        release_namespace: "{{ chart.namespace | default(chart.name) }}"
+        create_namespace: false
+        values_files: "{{ chart.files }}"
+      with_items: "{{ charts }}"
+      loop_control:
+        loop_var: chart

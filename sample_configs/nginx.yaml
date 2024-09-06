@@ -1,0 +1,40 @@
+---
+controller:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  allowSnippetAnnotations: true
+  modsecurity-snippet: |
+      # this enables the mod security nextcloud plugin
+      Include /etc/nginx/owasp-modsecurity-crs/plugins/nextcloud-rule-exclusions-before.conf
+
+      # this enables the default OWASP Core Rule Set
+      Include /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf
+
+      # Enable prevention mode. Options: DetectionOnly,On,Off (default is DetectionOnly)
+      SecRuleEngine On
+
+      # Enable scanning of the request body
+      SecRequestBodyAccess On
+
+      # Enable XML and JSON parsing
+      SecRule REQUEST_HEADERS:Content-Type "(?:text|application(?:/soap\+|/)|application/xml)/" \
+        "id:200000,phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
+
+      SecRule REQUEST_HEADERS:Content-Type "application/json" \
+        "id:200001,phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=JSON"
+
+      # Reject if larger (we could also let it pass with ProcessPartial)
+      SecRequestBodyLimitAction Reject
+
+      # Send ModSecurity audit logs to the stdout (only for rejected requests)
+      SecAuditLog /dev/stdout
+
+      # format the logs in JSON
+      SecAuditLogFormat JSON
+
+      # could be On/Off/RelevantOnly
+      SecAuditEngine RelevantOnly
+      
+      SecDebugLogLevel 4

@@ -1,0 +1,39 @@
+---
+plugins:
+  system-upgrades:
+    kind: manifest
+    manifests:
+      - https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
+      - https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
+      - https://github.com/rancher/system-upgrade-controller/releases/latest/download/crd.yaml
+
+  metallb:
+    kind: manifest
+    manifests:
+      - https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
+    disables:
+      - servicelb
+
+  cert_manager:
+    kind: manifest
+    manifests: 
+      - https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+
+  external-nfs:
+    kind: helm
+    repo: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+    chart: nfs-subdir-external-provisioner/nfs-subdir-external-provisioner
+
+  ingress-nginx:
+    kind: helm
+    repo: https://kubernetes.github.io/ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    disables: 
+      - traefik
+
+in_box:
+  - traefik
+  - servicelb
+  - flannel
+  - coredns
+  
