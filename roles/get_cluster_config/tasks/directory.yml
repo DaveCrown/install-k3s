@@ -1,0 +1,51 @@
+---
+- name: Purge work dir
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/config"
+    state: absent
+  when: not config_reuse | default(false)
+  run_once: true
+  delegate_to: 127.0.0.1
+  changed_when: false
+  become: false
+
+# - name: Create work dir
+#   ansible.builtin.file:
+#     path: "{{ work_dir }}"
+#     state: directory
+#     mode: '0700'
+#   run_once: true
+#   delegate_to: 127.0.0.1
+#   changed_when: false
+#   become: false
+
+- name: Get info about config directory
+  ansible.builtin.stat:
+    path: "{{ config_dir }}"
+  register: get_cluster_config_dir_stats
+  run_once: true
+  delegate_to: 127.0.0.1
+  changed_when: false
+  become: false
+  when: not config_reuse | default(false)
+
+- name: Validate config dir exists
+  ansible.builtin.assert:
+    that:
+      - get_cluster_config_dir_stats.stat.isdir
+    fail_msg: "Config_dir: {{ config_dir }} is not a valid directory"
+  run_once: true
+  delegate_to: 127.0.0.1
+  changed_when: false
+  become: false
+  when: not config_reuse | default(false)
+
+- name: Copy config files
+  ansible.builtin.copy:
+    src: "{{ config_dir }}/"
+    dest: "{{ playbook_dir }}/config"
+  run_once: true
+  delegate_to: 127.0.0.1
+  changed_when: false
+  become: false
+  when: not config_reuse | default(false)

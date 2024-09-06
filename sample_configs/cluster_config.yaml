@@ -1,0 +1,14 @@
+---
+master_node: node0
+
+plugins:
+  - plugin: metallb
+    config_file: metal-lb.yaml
+
+  - plugin: cert_manager
+    config_file: lets-encrypt.yaml
+
+  - plugin: ingress-nginx
+    name: ingress-nginx
+    namespace: ingress-nginx
+    config_file: nginx.yaml

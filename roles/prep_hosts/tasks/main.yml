@@ -9,7 +9,6 @@
 - name: Set a fact for the ssh_key file path
   ansible.builtin.set_fact:
     prep_hosts_path: "~/.ssh/{{ id_ed25519.pub | default('id_ed25519.pub') }}"
-  
 
 - name: Add authorized keys
   ansible.builtin.authorized_key:

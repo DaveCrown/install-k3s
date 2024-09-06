@@ -18,3 +18,4 @@
     K3S_URL: https://{{ hostvars[master_node]['ansible_host'] }}:6443
     K3S_TOKEN: "{{ install_worker_node_token }}"
   throttle: 1
+  debugger: on_failed

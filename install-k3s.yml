@@ -5,10 +5,6 @@
   gather_facts: true
 
   vars:
-    master_node: node0
-    disable_k3s_plugins:
-      - servicelb
-      - traefik
 
     kube_config_vars:
       file: "~/.kube/config"
@@ -16,8 +12,15 @@
       # context: default
       # set a user - uses default of default
       # user: default
+  pre_tasks:
+    - name: Import Plugin Map
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/plugin_map.yaml"
+        name: plugin_map
 
-  tasks:
+    - ansible.builtin.debug:
+        var: plugin_map
+        verbosity: 2
 
     - name: Get the username running the play
       become: false
@@ -29,6 +32,12 @@
       ansible.builtin.set_fact:
         local_user_name: "{{ local_user.stdout }}"
 
+    - name: Fetch cluster config files
+      ansible.builtin.include_role:
+        name: get_cluster_config
+      when: (config_repo is defined) or (config_dir is defined)
+
+  tasks:
     - name: Prep hosts
       ansible.builtin.include_role:
         name: prep_hosts
@@ -46,7 +55,7 @@
 
     - name: Get config files
       ansible.builtin.include_role:
-        name: get_config_files
+        name: get_k3s_config_files
       when: inventory_hostname in groups['master']
       run_once: true
 

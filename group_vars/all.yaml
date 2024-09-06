@@ -19,7 +19,9 @@ config_files:
   - file: k3s.yaml
     path: /etc/rancher/k3s
 
-
+#this is the default setting for a master node. if its not defined in the cluster config, 
+#master_node: "{{groups['master'].0}}"
+master_node: "{{ cluster_config.master_node }}"
 
 #k3s vars
 #
@@ -27,3 +29,5 @@ config_files:
 k3s_url: https://get.k3s.io
 #script file name
 install_script: "{{ ansible_env.HOME }}/install_k3s.sh"
+#manfiest directory
+k3s_manifest_dir: /var/lib/rancher/k3s/server/manifests
