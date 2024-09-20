@@ -1,5 +1,15 @@
 ---
-- name: Clone repo without creds
+- name: Purge work dir
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/config"
+    state: absent
+  when: not config_reuse | default(false)
+  run_once: true
+  delegate_to: 127.0.0.1
+  changed_when: false
+  become: false
+
+- name: Clone repo without creds # noqa: latest
   ansible.builtin.git:
     repo: "{{ config_repo }}"
     dest: "{{ playbook_dir }}/config"
@@ -7,9 +17,10 @@
   delegate_to: 127.0.0.1
   changed_when: false
   become: false
+  run_once: true
   when: GIT_USER is not defined
 
-- name: Clone repo via pw
+- name: Clone repo via pw # noqa: latest
   ansible.builtin.git:
     repo: https://{{ GIT_USER | urlencode }}:{{ GIT_PWD | urlencode }}@{{ config_repo }}
     dest: "{{ playbook_dir }}/config"
@@ -17,4 +28,5 @@
   delegate_to: 127.0.0.1
   changed_when: false
   become: false
+  run_once: true
   when: GIT_USER is defined

@@ -1,8 +1,8 @@
 ---
 - name: Fetch config from git
   ansible.builtin.include_tasks:
-    file: git.yaml
-  when: config_repo is defined 
+    file: git.yml
+  when: config_repo is defined
 
 - name: Copy Local dir to ./config
   ansible.builtin.include_tasks:
@@ -10,7 +10,7 @@
   when: config_dir is defined
 
 - name: Load config
-  ansible.builtin.include_vars: 
+  ansible.builtin.include_vars:
     file: "{{ playbook_dir }}/config/cluster-config.yaml"
     name: cluster_config
   delegate_to: 127.0.0.1

@@ -5,7 +5,7 @@
     state: directory
     mode: '0755'
 
-- name: Pull down io repo
+- name: Pull down io repo # noqa: latest
   ansible.builtin.git:
     repo: "{{ install_u6143_repo }}"
     dest: "{{ install_u6143_path }}"
@@ -20,6 +20,7 @@
     cmd: sudo make clean && sudo make
     chdir: "{{ install_u6143_path }}/C"
   notify: manage_service
+  changed_when: true
 
 - name: Copy rc.local templates
   ansible.builtin.template:
