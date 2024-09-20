@@ -4,7 +4,6 @@ plugins:
     kind: manifest
     manifests:
       - https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
-      - https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
       - https://github.com/rancher/system-upgrade-controller/releases/latest/download/crd.yaml
 
   metallb:
