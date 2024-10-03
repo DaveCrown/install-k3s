@@ -30,6 +30,11 @@ plugins:
     disables: 
       - traefik
 
+  prometheus:
+    kind: helm
+    repo:  https://prometheus-community.github.io/helm-charts
+    chart: prometheus-community/kube-prometheus-stack
+
 in_box:
   - traefik
   - servicelb
