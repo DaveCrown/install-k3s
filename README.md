@@ -100,6 +100,7 @@ I've included some [sample files](sample_files/), though you will need to adjust
 | install_prereqs | bool | should the play install the prereqs and prep the nodes | `true` | does a little more than installing prereuqes. See the [PreReqs Secions](#Prereqs) |
 | config_dir | string | Where should the play pull the cluster's config from | `none` | This will result in copying the directory with your config files and load them into the play. Its mutually exclusive with `config_repo` |
 | config_repo | string | The location of a gir repo to clone and use for configuration | `none` | This will cause the play to clone in a repo and load them into the play. Its mutually exclusive with `config_dir` |
+| patch_everything | bool | whether or not to run `apt update && apt upgrade -y` | false
 
 ### Main Vars
 

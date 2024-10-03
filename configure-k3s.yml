@@ -61,7 +61,7 @@
       loop_control:
         loop_var: repo
 
-    - name: Create a k8s namespace
+    - name: Create k8s namespaces
       kubernetes.core.k8s:
         name: "{{ namespace }}"
         api_version: v1
@@ -86,6 +86,7 @@
         release_namespace: "{{ chart.namespace | default(chart.name) }}"
         create_namespace: false
         values_files: "{{ chart.files }}"
+        update_repo_cache: true
       with_items: "{{ charts }}"
       loop_control:
         loop_var: chart
