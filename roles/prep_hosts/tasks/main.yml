@@ -33,11 +33,24 @@
     state: latest
     update_cache: true
     only_upgrade: true
+  when: patch_everything | default(false)
+
+- name: Add Node exporter to package list
+  ansible.builtin.set_fact:
+    prep_hosts_pkgs_ubuntu: "{{ prep_hosts_pkgs_ubuntu + ['prometheus-node-exporter'] }}"
+  when:
+    - enable_node_exporter | default(true)
+    - '"prometheus" in cluster_config | get_enabled_plugins(plugin_map)'
+
+- name: Dump install packages
+  ansible.builtin.debug:
+    var: prep_hosts_pkgs_ubuntu
+    verbosity: 2
 
 - name: Install Things
   ansible.builtin.apt:
     name: "{{ pkg }}"
     state: present
-  with_items: "{{ prep_hosts_pkgs }}"
+  with_items: "{{ prep_hosts_pkgs_ubuntu }}"
   loop_control:
     loop_var: pkg

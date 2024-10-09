@@ -97,28 +97,34 @@ I've included some [sample files](sample_files/), though you will need to adjust
 | ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` |
 | install_u6143 | bool |Install a utronics u6143 driver for raspberry pi's | `false` | see the docs on the [Utronics site](https://www.uctronics.com/download/Amazon/U6145_Manual.pdf) |
 | build-config | bool | should the play replace ~/.kube/config with ne from the new cluster | `false` | leave disabled if you want to merge the new cluster config into your `.kube/config` |
-| install_prereqs | bool | should the play install the prereqs and prep the nodes | `true` | does a little more than installing prereuqes. See the [PreReqs Secions](#Prereqs) |
+| install_prereqs | bool | should the play install the prereqs and prep the nodes | `true` | does a little more than installing prereuqes. See the [Prereqs Secions](#Prereqs) |
 | config_dir | string | Where should the play pull the cluster's config from | `none` | This will result in copying the directory with your config files and load them into the play. Its mutually exclusive with `config_repo` |
 | config_repo | string | The location of a gir repo to clone and use for configuration | `none` | This will cause the play to clone in a repo and load them into the play. Its mutually exclusive with `config_dir` |
-| patch_everything | bool | whether or not to run `apt update && apt upgrade -y` | false
+| enable_node_exporterr | bool  | install the `prometheus-node-exporter` package when Prometheus is selected for install | `true` | See the [Prometheus Support Section](#Prometheus) |
+| patch_everything | bool | whether or not to run `apt update && apt upgrade -y` | `false` | |
 
-### Main Vars
+## Prometheus
 
-In the play there are a few main vars
-| Option| Usage | Notes |
-| --- | --- | --- |
-| master_node | The name of the master node | will replace with lookup function later |
-| disable_k3s_plugins | A list of k3s plugins to disable | servicelb and traefik are disabled to i can install metallb and ingress-nginx |
+In the version 1.2 of the play, I added support for installing Prometheus to the K3's cluster. I'm using the the community stack to deploy Prometheus, Grafana, and Alert Manager. If the Prometheus plugin is enabled, the play will add `prometheus-node-exporter` to the list of packages to install during the Prep Hosts phase. This can be overridden with the `enable_node_exporter=false` option. 
 
-## Relese notes
+Configuring Prometheus is beyond the scope of this documentation.. 
 
-### 1.0 
+## Release notes
+
+### 1.0
+
 - Initial Release
 
 ### 1.1
+
 - Replaced static plugin disablement with a dynamic system
 - Added the `config.yml` to install the set of plugins for the cluster
-- included a custom jinja2 filter to make parsing the data model easier 
+- included a custom jinja2 filter to make parsing the data model easier
+
+### 1.2
+
+- Added support for Prometheus
+- Made `apt update && apt upgrade -y` optional
 
 ## To do's
 
@@ -132,6 +138,6 @@ In the play there are a few main vars
 - [X] Move this to github issues
 
 ## Legal
-I am in no away affiliated with any company , nor did I write the fix. I just wrote an ansible play making deploying a home lab easier and share it with the world. Use this as your own peril with good backups. Don't blame me if this burns down your environment, your house, or anything you were warned. I take no responsibility or liability.
+I am in no away affiliated with any company, nor did I write any of the software being deployed with this. I just wrote an ansible play making deploying a home lab easier and shared it with the world. Use this as your own peril with good backups. Don't blame me if this burns down your environment, your house, or anything... you were warned. I take no responsibility or liability.
 
 Trademarks and Copyrights are properties of their respective owners.
