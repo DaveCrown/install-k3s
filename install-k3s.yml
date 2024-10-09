@@ -18,7 +18,8 @@
         file: "{{ playbook_dir }}/plugin_map.yaml"
         name: plugin_map
 
-    - ansible.builtin.debug:
+    - name: debug - Dump plugin data
+      ansible.builtin.debug:
         var: plugin_map
         verbosity: 2
 
@@ -35,7 +36,8 @@
     - name: Fetch cluster config files
       ansible.builtin.include_role:
         name: get_cluster_config
-      when: (config_repo is defined) or (config_dir is defined)
+      when:
+        - (config_repo is defined) or (config_dir is defined)
 
   tasks:
     - name: Prep hosts
@@ -81,4 +83,3 @@
       delegate_to: 127.0.0.1
       become: false
       changed_when: false
-
