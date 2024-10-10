@@ -13,11 +13,12 @@ Right now I'm only targeting ubuntu. There are no guard rails to stop this from 
 
 > [!CAUTION]  
 >
-> Since this play is meant for a home lab, it will copy the default k3s.yml and node-node token to a directory called work while the play is running. While the play will delete work dir when done, it still creates some exposure. You have been thusly warned. 
+> Since this play is meant for a home lab, it will copy the default k3s.yml and node-node token to a directory called work while the play is running. While the play will delete work dir when done, it still creates some exposure. You have been thusly warned.
 
 ### Installation
 
 To use the installation play:
+
 1. build your inventory out
 1. (Optionaly) Make sure you have your cluster_config.yaml and config directory built out
 1. call `ansible-play configure-k3s.yml -e '{ any flags here in json format }'`
@@ -26,18 +27,20 @@ To use the installation play:
 I use `ansible-playbook install-k3s.yml -e '{ "build_config": true, "install_u6143": true, "config_repo": some git url}'`
 
 ### Configuration
+
 To use the installation play:
-1. Make sure you have your cluster_config.yaml and config directory built out 
-1. call `ansible-play install-k3s.yml -e '{ any flags here in json format }'`
-1. get a cup of coffee
+
+1. Make sure you have your cluster_config.yaml and config directory built out
+1. Call `ansible-play install-k3s.yml -e '{ any flags here in json format }'`
+1. Get a cup of coffee
 
 I use `ansible-playbook configure-k3s.yml -e '{ "config_repo": some git url}'`
 
 ### Uninstall
 
-> [!CAUTION]  
+> [!CAUTION]
 >
-> This will remove K3's from you cluster and any configuation files on the nodes.
+> This will remove K3's from you cluster and any configuration files on the nodes.
 
 This is pretty simple, just call the `uninstall-k3s.yml` play like so. It will also remove most of the on disk configs.
 
@@ -46,21 +49,35 @@ This is pretty simple, just call the `uninstall-k3s.yml` play like so. It will a
 ### Prereqs
 
 This will do the following:
+
 - Set the hostname of each node to whats defined in the inventory
 - Create a service account with the following defaults
-     - a user name of ansible
-     - the ssh key of id_ed25519.pub
-     - no sudo password
+  - a user name of ansible
+  - the ssh key of id_ed25519.pub
+  - no sudo password
 - Install the following:
-[!INCLUDE [./prep_hosts/vars/main.yml](prep_hosts/vars/main.yml)]
+  - `git`
+  - `raspi-config`
+  - `build-essential`
+  - `nfs-common`
+  - `net-tools`
+  - `htop`
+- Removes:
+  - `prometheus-node-exporter`
 
-To manage this, use the flags in the [CLI Section](#CLI)
+To manage this, use the flags in the [CLI Section](#cli)
+
+#### Prometheus
+
+In the version 1.2 of the play, I added support for installing Prometheus to the K3's cluster. I'm using the the community stack to deploy Prometheus, Grafana, and Alert Manager. If the Prometheus plugin is enabled, the play will remove `prometheus-node-exporter` from the nodes the Prep Hosts phase.
+
+Configuring Prometheus is beyond the scope of this documentation.
 
 ## Inventory
 
 ### Nodes
 
-This section has two groups, master and workers. Its expected that you use names for the nodes as it updates nodes hostname to the node name defined in the inventory file for the sake of making it easier to work with k8s. 
+This section has two groups, master and workers. Its expected that you use names for the nodes as it updates nodes hostname to the node name defined in the inventory file for the sake of making it easier to work with k8s.
 
 Please leave the `nodes:children` intact as this is for planned future functionality.
 
@@ -79,13 +96,14 @@ master
 workers
 ```
 
-## Config Files 
-To Configure your cluster with the plugins required for bootstrapping a home lab the play uses two files, `cluster_config.yaml`([docs](docs/cluster_config.md)) and `plugin_map.yaml`([docs](docs/plugin_map.md)). 
+## Config Files
+
+To Configure your cluster with the plugins required for bootstrapping a home lab the play uses two files, `cluster_config.yaml`([docs](docs/cluster_config.md)) and `plugin_map.yaml`([docs](docs/plugin_map.md)).
 
 - `cluster_config.yaml` ([docs](docs/cluster_config.md)) needs to be in a local directory or git repo along with any other manifests and and helm chart value files you need to boot strap your environement. The idea is two fold. The first being it makes it easy to keep the bootstraping *as code*. The second is you could extend this play to multiple clusters.
 - `plugin_map.md` ([docs](docs/plugin_map.md)) is at the root of the this repo. As as this file contains the more static definitions used for `cluster_config.yaml` I've included it in this play.
 
-I've included some [sample files](sample_files/), though you will need to adjust some of the files if you want to use them. 
+I've included some [sample files](sample_files/), though you will need to adjust some of the files if you want to use them.
 
 ### CLI
 
@@ -94,20 +112,13 @@ I've included some [sample files](sample_files/), though you will need to adjust
 | manage_service_account | bool | should the play manage service account for thenodes os| `true` | |
 | service_account_name | string | name of the account | `ansible`| |
 | service_account_nopasswd | bool | whether to allow passwdless sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
-| ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` |
+| ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` | |
 | install_u6143 | bool |Install a utronics u6143 driver for raspberry pi's | `false` | see the docs on the [Utronics site](https://www.uctronics.com/download/Amazon/U6145_Manual.pdf) |
 | build-config | bool | should the play replace ~/.kube/config with ne from the new cluster | `false` | leave disabled if you want to merge the new cluster config into your `.kube/config` |
-| install_prereqs | bool | should the play install the prereqs and prep the nodes | `true` | does a little more than installing prereuqes. See the [Prereqs Secions](#Prereqs) |
+| install_prereqs | bool | should the play install the prereqs and prep the nodes | `true` | does a little more than installing prereqs. See the [Prereqs Secions](#prereqs) |
 | config_dir | string | Where should the play pull the cluster's config from | `none` | This will result in copying the directory with your config files and load them into the play. Its mutually exclusive with `config_repo` |
 | config_repo | string | The location of a gir repo to clone and use for configuration | `none` | This will cause the play to clone in a repo and load them into the play. Its mutually exclusive with `config_dir` |
-| enable_node_exporterr | bool  | install the `prometheus-node-exporter` package when Prometheus is selected for install | `true` | See the [Prometheus Support Section](#Prometheus) |
 | patch_everything | bool | whether or not to run `apt update && apt upgrade -y` | `false` | |
-
-## Prometheus
-
-In the version 1.2 of the play, I added support for installing Prometheus to the K3's cluster. I'm using the the community stack to deploy Prometheus, Grafana, and Alert Manager. If the Prometheus plugin is enabled, the play will add `prometheus-node-exporter` to the list of packages to install during the Prep Hosts phase. This can be overridden with the `enable_node_exporter=false` option. 
-
-Configuring Prometheus is beyond the scope of this documentation.. 
 
 ## Release notes
 
@@ -128,7 +139,7 @@ Configuring Prometheus is beyond the scope of this documentation..
 
 ## To do's
 
-- [] Install / Deploy / Configure the following
+- [x] Install / Deploy / Configure the following
   - [x] ingress-nginx
   - [x] metallb
   - [x] dynamic nfs PVC provisioner
@@ -138,6 +149,7 @@ Configuring Prometheus is beyond the scope of this documentation..
 - [X] Move this to github issues
 
 ## Legal
+
 I am in no away affiliated with any company, nor did I write any of the software being deployed with this. I just wrote an ansible play making deploying a home lab easier and shared it with the world. Use this as your own peril with good backups. Don't blame me if this burns down your environment, your house, or anything... you were warned. I take no responsibility or liability.
 
 Trademarks and Copyrights are properties of their respective owners.
