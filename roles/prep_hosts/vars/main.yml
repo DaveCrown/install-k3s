@@ -6,3 +6,5 @@ prep_hosts_pkgs_ubuntu:
   - nfs-common
   - net-tools
   - htop
+
+prep_hosts_prom_pkg: prometheus-node-exporter
