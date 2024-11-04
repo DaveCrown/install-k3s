@@ -13,10 +13,18 @@ plugins:
     disables:
       - servicelb
 
+  purelb:
+    kind: helm
+    repo: purelb https://gitlab.com/api/v4/projects/20400619/packages/helm/stable
+    chart: purelb/purelb
+    disables:
+      - servicelb
+
   cert_manager:
     kind: manifest
     manifests: 
       - https://github.com/jetstack/cert-manager/releases/download/v1.7.1/cert-manager.yaml
+    namespace: cert-manager
 
   external-nfs:
     kind: helm
@@ -34,6 +42,13 @@ plugins:
     kind: helm
     repo:  https://prometheus-community.github.io/helm-charts
     chart: prometheus-community/kube-prometheus-stack
+
+  sloth:
+    kind: helm
+    repo: https://slok.github.io/sloth
+    chart: sloth/sloth
+    requires: 
+      - prometheus
 
 in_box:
   - traefik

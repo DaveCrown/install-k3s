@@ -137,6 +137,17 @@ I've included some [sample files](sample_files/), though you will need to adjust
 - Added support for Prometheus
 - Made `apt update && apt upgrade -y` optional
 
+### 1.2.1
+
+- Fixed Prometheus support:
+  - Remove packages if selected
+  - added support for CRD's
+- Added sloth support
+- Added pre-req support. If sloth requires prometheus, validated prometheus is also selected.
+- refactored the configure play into a role for readability
+- various fixes to make the linter happy
+- added devcontainer support to work around PyYAML support with homebrew and Python 3.13
+
 ## To do's
 
 - [x] Install / Deploy / Configure the following

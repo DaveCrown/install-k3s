@@ -1,0 +1,41 @@
+---
+- name: Create k8s namespaces
+  kubernetes.core.k8s:
+    name: "{{ namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+  with_items: "{{ cluster_config | get_helm_namespaces(plugin_map) }}"
+  loop_control:
+    loop_var: namespace
+
+- name: Set the Helm Chart fact
+  ansible.builtin.set_fact:
+    charts: "{{ cluster_config | get_helm_charts(plugin_map, playbook_dir) }}"
+
+- name: Dump chart values
+  ansible.builtin.debug:
+    msg: "{{ charts.0.values | type_debug }}"
+    verbosity: 2
+
+- name: Add helm repos
+  kubernetes.core.helm_repository:
+    repo_name: "{{ repo.name }}"
+    repo_url: "{{ repo.url }}"
+  with_items: "{{ cluster_config | get_helm_repos(plugin_map) | dict2items(key_name='name', value_name='url') }}"
+  loop_control:
+    loop_var: repo
+
+- name: Apply Helm Charts
+  kubernetes.core.helm:
+    name: "{{ chart.name }}"
+    chart_ref: "{{ chart.ref }}"
+    release_namespace: "{{ chart.namespace | default(chart.name) }}"
+    create_namespace: false
+    values_files: "{{ chart.files }}"
+    update_repo_cache: true
+    reset_values: true
+    reuse_values: true
+  with_items: "{{ charts }}"
+  loop_control:
+    loop_var: chart

@@ -1,0 +1,9 @@
+---
+- name: Apply Prometheus Crds
+  kubernetes.core.k8s:
+    src: "{{ crd }}"
+    state: present
+  with_fileglob:
+    - "{{ playbook_dir }}/config/{{ cluster_config.prometheus_crd_path }}/*.yaml"
+  loop_control:
+    loop_var: crd

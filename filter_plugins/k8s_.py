@@ -129,6 +129,32 @@ class FilterModule(object):
                 manifest_list.append(config_plugin['config_file'])
         
         return manifest_list
+    
+    def get_manifest_namespaces(self,config,plugin_map)->list:
+        """Takes the config file and plugin map and generates a list of name spaces to create in advance of install the manifests
+
+        Usage: {{ config | get_get_manifest_namespaces(plugin_map) }}
+
+        Args:
+            config (dict): this is a imported config file of what to configure at install
+            plugin_map (dict): the object with the plugin map
+
+        Raises:
+            TemplateError: An error if an undefined plugin is used
+
+        Returns:
+            list: a list of namespaces to create
+        """
+        namespace_list = []
+        for config_plugin in config['plugins']:
+            if config_plugin['plugin'] not in plugin_map['plugins']:
+                raise TemplateError("Undefined Plugin: {} found".format(config_plugin['plugin']))
+
+            plugin_def= plugin_map['plugins'][config_plugin['plugin']]
+            if 'kind' in plugin_def and plugin_def['kind'] == "manifest" and 'namespace' in config_plugin:
+                if config_plugin['namespace'] not in namespace_list:
+                    namespace_list.append(config_plugin['namespace'])
+        return namespace_list
 
     def get_helm_repos(self,config:dict,plugin_map:dict)->list:
         """Takes the config file and plugin map and creates a list of helm repositories to add
@@ -172,7 +198,7 @@ class FilterModule(object):
             TemplateError: An error if an undefined plugin is used
 
         Returns:
-            list: a list of helm repositories 
+            list: a list of namespaces
         """
         namespace_list = []
         for config_plugin in config['plugins']:
@@ -201,6 +227,7 @@ class FilterModule(object):
         Returns:
             list: A list of dicts with the necessary data to install the required helm charts
         """
+
         helm_charts = []
 
         for config_plugin in config['plugins']:
@@ -219,7 +246,38 @@ class FilterModule(object):
                 helm_charts.append(chart)
 
         return helm_charts
-    
+
+    def validate_prereqs(self,config:dict,plugin_map:dict)->bool:
+        """This filter will parse the config and plugin map and validate that all plugins that any plugin prereq is satisfied. 
+        I.E. if sloth is selected and it has a prereq of prometheus, that prometheus is also selected. 
+
+        Usage: {{ config | validate_prereqs(plugin_map) }}
+
+        Args:
+            config (dict): this is a imported config file of what to configure at install
+            plugin_map (dict): the object with the plugin map
+
+        Returns:
+            bool: true if all the prereqs are met. 
+        """
+
+        met_prereqs = False
+        required_plugins=set()
+
+        enabled_plugins = set(self.get_enabled_plugins(config,plugin_map))
+
+        for enabled_plugin in enabled_plugins:
+            plugin_def= plugin_map['plugins'][enabled_plugin]
+            if 'requires' in plugin_def:
+                required_plugins = required_plugins.union(set(plugin_def['requires']))
+        
+        if len(required_plugins) == 0:
+            met_prereqs = True
+            return met_prereqs
+
+        met_prereqs = required_plugins.issubset(enabled_plugins)
+
+        return met_prereqs
 
     def filters(self):
         return {
@@ -227,17 +285,19 @@ class FilterModule(object):
             'get_disables': self.get_disables,
             'get_manifests': self.get_manifests,
             'get_manifest_configs': self.get_manifest_configs,
+            'get_manifest_namespaces': self.get_manifest_configs,
             'get_helm_repos': self.get_helm_repos,
             'get_helm_namespaces': self.get_helm_namespaces,
-            'get_helm_charts':self.get_helm_charts
+            'get_helm_charts':self.get_helm_charts,
+            'validate_prereqs':self.validate_prereqs
         }
     
 if __name__ == "__main__":
     #stupid little section i use to debug the filter
     import yaml
 
-    cluster_config = yaml.safe_load(open('/Users/Dave/k8s/install-k3s/config/cluster-config.yaml'))
-    plugin_defs = yaml.safe_load(open('/Users/dave/k8s/install-k3s/plugin_map.yaml'))
+    cluster_config = yaml.safe_load(open('./config/cluster-config.yaml'))
+    plugin_defs = yaml.safe_load(open('./plugin_map.yaml'))
 
     filter =  FilterModule()
 
@@ -248,3 +308,4 @@ if __name__ == "__main__":
     print(filter.get_helm_repos(cluster_config,plugin_defs))
     print(filter.get_helm_namespaces(cluster_config,plugin_defs))
     print(filter.get_helm_charts(cluster_config,plugin_defs,'/Users/dave/install-k3s'))
+    print(filter.validate_prereqs(cluster_config,plugin_defs))

@@ -15,7 +15,7 @@
     user: ansible
     key: "{{ lookup('file', prep_hosts_path) }}"
 
-- name: Make ansible sudoless
+- name: Make ansible sudo password-less
   ansible.builtin.lineinfile:
     dest: "/etc/sudoers" # path: in version 2.3
     state: "present"
