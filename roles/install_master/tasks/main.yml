@@ -1,14 +1,4 @@
 ---
-
-# - name: Remove old skp files
-#   ansible.builtin.file:
-#     path: "{{ skp_file }}"
-#     state: absent
-#   with_fileglob:
-#     - "{{ k3s_manifest_dir }}/*.skp"
-#   loop_control:
-#     loop_var: skp_file
-
 - name: Dump cluster_config
   ansible.builtin.debug:
     var: cluster_config
@@ -24,24 +14,6 @@
     msg: "{{ cluster_config | get_disables(plugin_map) }}"
     verbosity: 2
 
-# - name: Generate list of plugins to disable
-#   ansible.builtin.set_fact:
-#     install_master_disables: "{{ cluster_config | get_disables(plugin_map) }}"
-#   # debugger: on_failed
-
-
-# - name: Touch skp files
-#   ansible.builtin.file:
-#     path: "{{ k3s_manifest_dir }}/{{disable}}.skp"
-#     state: touch
-#     owner: root
-#     group: root
-#     mode: '0600'
-#   with_items: "{{ install_master_disables }}"
-#   loop_control:
-#     loop_var: disable
-#   when: install_master_disables | length > 0
-
 - name: Get installer
   ansible.builtin.get_url:
     url: "{{ k3s_url }}"
@@ -50,11 +22,5 @@
 
 - name: Install K3s Master Node
   ansible.builtin.command:
-    cmd: "{{ install_script }} {{ cluster_config | get_disables(plugin_map)  }}"
+    cmd: "{{ install_script }} {{ cluster_config | get_disables(plugin_map) }}"
     creates: /var/lib/rancher/k3s/server/node-token
-
-
-# - name: Install K3s Master
-#   ansible.builtin.command:
-#     cmd: curl -sfL https://get.k3s.io | sh -s -  {{ install_master_args_disable }}
-#     creates: /var/lib/rancher/k3s/server/node-token

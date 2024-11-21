@@ -1,0 +1,26 @@
+---
+- name: Dump Manifests
+  ansible.builtin.debug:
+    msg: "{{ cluster_config | get_manifests(plugin_map) }}"
+    verbosity: 2
+
+- name: Dump Manifest Configs
+  ansible.builtin.debug:
+    msg: "{{ cluster_config | get_manifest_configs(plugin_map) }}"
+    verbosity: 2
+
+- name: Apply Manifests
+  kubernetes.core.k8s:
+    src: "{{ manifest }}"
+    state: present
+  with_items: "{{ cluster_config | get_manifests(plugin_map) }}"
+  loop_control:
+    loop_var: manifest
+
+- name: Apply Configs for Manifests
+  kubernetes.core.k8s:
+    src: "{{ playbook_dir }}/config/{{ manifest_config }}"
+    state: present
+  with_items: "{{ cluster_config | get_manifest_configs(plugin_map) }}"
+  loop_control:
+    loop_var: manifest_config

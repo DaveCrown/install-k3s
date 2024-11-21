@@ -1,0 +1,21 @@
+---
+- name: Assert plugin prereqs are met
+  ansible.builtin.assert:
+    that: "{{ cluster_config | validate_prereqs(plugin_map) }}"
+    fail_msg: "Plugin requirements are not met. Please validate your config against the plugin map"
+    success_msg: "Prereqs are met"
+
+- name: Run Manifest Tasks
+  ansible.builtin.include_tasks:
+    file: manifests.yml
+
+- name: Run helm tasks
+  ansible.builtin.include_tasks:
+    file: helm.yml
+
+- name: Configure Prometheus
+  ansible.builtin.include_tasks:
+    file: prometheus.yml
+  when:
+    - '"prometheus" in cluster_config | get_enabled_plugins(plugin_map)'
+    - cluster_config.prometheus_crd_path is defined
