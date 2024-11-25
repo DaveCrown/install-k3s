@@ -29,10 +29,8 @@
 
 - name: Update all packages to their latest version
   ansible.builtin.apt:
-    name: "*"
-    state: latest
+    upgrade: dist
     update_cache: true
-    only_upgrade: true
   when: patch_everything | default(false)
 
 - name: Install Things
@@ -43,9 +41,17 @@
   loop_control:
     loop_var: pkg
 
+- name: Set a fact for if prometheus is selected for install
+  ansible.builtin.set_fact:
+    manage_prometheus: '"prometheus" in cluster_config | get_enabled_plugins(plugin_map)'
+  when: cluster_config is defined
+
 - name: Remove apt installed Prometheus package
   ansible.builtin.apt:
     name: "{{ prep_hosts_prom_pkg }}"
     state: absent
-  when:
-    - '"prometheus" in cluster_config | get_enabled_plugins(plugin_map)'
+  when: manage_prometheus | default(false)
+
+- name: Remove dependencies that are no longer required.
+  ansible.builtin.apt:
+    autoremove: true

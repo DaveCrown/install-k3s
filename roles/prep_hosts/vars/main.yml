@@ -2,7 +2,6 @@
 prep_hosts_pkgs_ubuntu:
   - git
   - raspi-config
-  - build-essential
   - nfs-common
   - net-tools
   - htop

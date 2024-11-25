@@ -8,3 +8,6 @@ install_u6143_templates:
   - template: rc-local.service.j2
     path: /etc/systemd/system/rc-local.service
     perms: '0644'
+
+install_u6143_pkgs:
+  - build-essential
