@@ -1,0 +1,23 @@
+---
+- name: Patch nodes
+  hosts: "{{ install_host | default('nodes')}}"
+  become: true
+  gather_facts: true
+
+  vars:
+    patch_everything: true
+
+  roles:
+    - role: prep_hosts
+    - role: install_u6143
+      when: install_u6143 | default(false)
+
+
+- name: Reboot nodes
+  hosts: "{{ install_host | default('nodes')}}"
+  become: true
+  gather_facts: true
+  serial: 1
+
+  roles:
+    - reboot_node

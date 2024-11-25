@@ -1,0 +1,29 @@
+---
+- name: Check if a reboot is required.
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+    get_checksum: false
+  register: patch_node_reboot_required_file
+
+- name: Drain Node
+  kubernetes.core.k8s_drain:
+    state: drain
+    name: "{{ ansible_hostname }}"
+    delete_options:
+      ignore_daemonsets: true
+      delete_emptydir_data: true
+  delegate_to: localhost
+  become: false
+  when: patch_node_reboot_required_file.stat.exists
+
+- name: Reboot the server
+  ansible.builtin.reboot:
+  when: patch_node_reboot_required_file.stat.exists
+
+- name: Uncordon Node
+  kubernetes.core.k8s_drain:
+    state: uncordon
+    name: "{{ ansible_hostname }}"
+  delegate_to: localhost
+  become: false
+  when: patch_node_reboot_required_file.stat.exists

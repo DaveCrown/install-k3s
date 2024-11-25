@@ -3,11 +3,18 @@
 
 ## Description
 
-This play installs and configures a Kubernetes  cluster using k3's on one master node and how ever many workers you define. I developed this for my home environment and making it easier to redeploy a k3s cluster on raspbery pi's.  The play is fairly idempotent, as it uses the presence of the node-token file and agent uninstall script to detect if you have k3's installed.  The play will also configure the cluster's initial plugins for your cluster, provding consistent and *as code* setup.
+This project proves a few plays for installing and managing a k3s cluster. I wrote this make redeploying and managing my home lab easier. To make this reusable modular, and extensible, the project uses an external config that can be brought in via directory or git repo. The project is comprised of a few plays. To keep the install and uninstall plays idempotent, they validate the the installation via a token file and uninstall binary to determine if K3's is installed. 
+
+### Plays in this project
+
+- `install-k3s.yml`:  The install play will install any pre-req packages and install the control and worker nodes.
+- `configure-k3s.yaml`: This play will manage boot strapping of the cluster and install and configure things like loadbalencers and CNI's/CSI's/Etc and matching manifests. 
+- `uninstall.yml`: This play removes K3s and any on node artifcats
+- `node-maintenance`: This play will ensure the pre-reqs are installed and then patch the nodes. If it detects a reboot is required, it will drain and reboot nodes one at a time. 
 
 ## Requirements
 
-Right now I'm only targeting ubuntu. There are no guard rails to stop this from running on other distributions. I make the assumption of a single master and multiple workers.
+Right now I'm only targeting ubuntu. There are no guard rails to stop this from running on other distributions. I make the assumption of a single master and multiple workers. To ensure you have all the proper collections installed, please run `ansible-galaxy install -r requirements.yml`
 
 ## Usage
 
@@ -35,6 +42,17 @@ To use the installation play:
 1. Get a cup of coffee
 
 I use `ansible-playbook configure-k3s.yml -e '{ "config_repo": some git url}'`
+
+### OS Patching / Maintenance  
+
+With all the automation I have going on with this project, OS management should be included. The `node-maintenance.yml' play will do a few things. The idea is to use this play to reconverge your node while doing your OS maintenance.
+
+1. Ensure the packages required are present on the nodes
+1. Patch each node via dist upgrade
+1. Remove any packages marked as unneeded
+1. Perform a rolling Drain, reboot, and uncordon nodes if a reboot is required. Reboot is governed by the preense of `/var/run/reboot-required`
+
+The play uses some of the same flags as the install as documented below, however, I use use `ansible-playbook node-maintenance.yml -e '{ "install_u6143": true}'`
 
 ### Uninstall
 
@@ -107,9 +125,11 @@ I've included some [sample files](sample_files/), though you will need to adjust
 
 ### CLI
 
+#### install-k3s
+
 | Option | Type| Usage | Default | Notes|
 | --- | --- | --- | --- | --- |
-| manage_service_account | bool | should the play manage service account for thenodes os| `true` | |
+| manage_service_account | bool | should the play manage service account for the nodes os| `true` | |
 | service_account_name | string | name of the account | `ansible`| |
 | service_account_nopasswd | bool | whether to allow passwdless sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
 | ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` | |
@@ -119,6 +139,21 @@ I've included some [sample files](sample_files/), though you will need to adjust
 | config_dir | string | Where should the play pull the cluster's config from | `none` | This will result in copying the directory with your config files and load them into the play. Its mutually exclusive with `config_repo` |
 | config_repo | string | The location of a gir repo to clone and use for configuration | `none` | This will cause the play to clone in a repo and load them into the play. Its mutually exclusive with `config_dir` |
 | patch_everything | bool | whether or not to run `apt update && apt upgrade -y` | `false` | |
+
+#### configure-k3s
+| Option | Type| Usage | Default | Notes|
+| --- | --- | --- | --- | --- |
+| config_dir | string | Where should the play pull the cluster's config from | `none` | This will result in copying the directory with your config files and load them into the play. Its mutually exclusive with `config_repo` |
+| config_repo | string | The location of a gir repo to clone and use for configuration | `none` | This will cause the play to clone in a repo and load them into the play. Its mutually exclusive with `config_dir` |
+
+#### node-maintenance
+| Option | Type| Usage | Default | Notes|
+| --- | --- | --- | --- | --- |
+| manage_service_account | bool | should the play manage service account for the nodes os| `true` | |
+| service_account_name | string | name of the account | `ansible`| |
+| service_account_nopasswd | bool | whether to allow passwdless sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
+| ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` | |
+| install_u6143 | bool |Install a utronics u6143 driver for raspberry pi's | `false` | see the docs on the [Utronics site](https://www.uctronics.com/download/Amazon/U6145_Manual.pdf) |
 
 ## Release notes
 
@@ -147,6 +182,14 @@ I've included some [sample files](sample_files/), though you will need to adjust
 - refactored the configure play into a role for readability
 - various fixes to make the linter happy
 - added devcontainer support to work around PyYAML support with homebrew and Python 3.13
+
+# 1.3
+
+- Added a play to patch and reboot the nodes
+- moved patching from install to maint play
+- included prep_hosts and install_u6143 in maint play
+- moved build packages to the the install_u6143 role
+- changed the install u6143 role to use the make module instead of command
 
 ## To do's
 
