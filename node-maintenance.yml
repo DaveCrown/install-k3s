@@ -18,6 +18,7 @@
   become: true
   gather_facts: true
   serial: 1
+  any_errors_fatal: true
 
   roles:
     - reboot_node
