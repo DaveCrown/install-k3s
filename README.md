@@ -8,8 +8,8 @@ This project proves a few plays for installing and managing a k3s cluster. I wro
 ### Plays in this project
 
 - `install-k3s.yml`:  The install play will install any pre-req packages and install the control and worker nodes.
-- `configure-k3s.yaml`: This play will manage boot strapping of the cluster and install and configure things like loadbalencers and CNI's/CSI's/Etc and matching manifests. 
-- `uninstall.yml`: This play removes K3s and any on node artifcats
+- `configure-k3s.yaml`: This play will manage boot strapping of the cluster and install and configure things like load-balancers and CNI's/CSI's/Etc and matching manifests. 
+- `uninstall.yml`: This play removes K3s and any on node artifacts
 - `node-maintenance`: This play will ensure the pre-reqs are installed and then patch the nodes. If it detects a reboot is required, it will drain and reboot nodes one at a time. 
 
 ## Requirements
@@ -27,7 +27,7 @@ Right now I'm only targeting ubuntu. There are no guard rails to stop this from 
 To use the installation play:
 
 1. build your inventory out
-1. (Optionaly) Make sure you have your cluster_config.yaml and config directory built out
+1. (Optionally) Make sure you have your cluster_config.yaml and config directory built out
 1. call `ansible-play configure-k3s.yml -e '{ any flags here in json format }'`
 1. get a cup of coffee
 
@@ -50,7 +50,7 @@ With all the automation I have going on with this project, OS management should 
 1. Ensure the packages required are present on the nodes
 1. Patch each node via dist upgrade
 1. Remove any packages marked as unneeded
-1. Perform a rolling Drain, reboot, and uncordon nodes if a reboot is required. Reboot is governed by the preense of `/var/run/reboot-required`
+1. Perform a rolling Drain, reboot, and uncordon nodes if a reboot is required. Reboot is governed by the presence of `/var/run/reboot-required`
 
 The play uses some of the same flags as the install as documented below, however, I use use `ansible-playbook node-maintenance.yml -e '{ "install_u6143": true}'`
 
@@ -131,7 +131,7 @@ I've included some [sample files](sample_files/), though you will need to adjust
 | --- | --- | --- | --- | --- |
 | manage_service_account | bool | should the play manage service account for the nodes os| `true` | |
 | service_account_name | string | name of the account | `ansible`| |
-| service_account_nopasswd | bool | whether to allow passwdless sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
+| service_account_nopasswd | bool | whether to allow password-less sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
 | ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` | |
 | install_u6143 | bool |Install a utronics u6143 driver for raspberry pi's | `false` | see the docs on the [Utronics site](https://www.uctronics.com/download/Amazon/U6145_Manual.pdf) |
 | build-config | bool | should the play replace ~/.kube/config with ne from the new cluster | `false` | leave disabled if you want to merge the new cluster config into your `.kube/config` |
@@ -151,7 +151,7 @@ I've included some [sample files](sample_files/), though you will need to adjust
 | --- | --- | --- | --- | --- |
 | manage_service_account | bool | should the play manage service account for the nodes os| `true` | |
 | service_account_name | string | name of the account | `ansible`| |
-| service_account_nopasswd | bool | whether to allow passwdless sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
+| service_account_nopasswd | bool | whether to allow password-less sudo | `true` | since this is for home labs, I keep this to true. feel free to set a password and store it an ansible vault for later. |
 | ssh_key_file | string | what ssh key to configure | `id_ed25519.pub` | |
 | install_u6143 | bool |Install a utronics u6143 driver for raspberry pi's | `false` | see the docs on the [Utronics site](https://www.uctronics.com/download/Amazon/U6145_Manual.pdf) |
 
