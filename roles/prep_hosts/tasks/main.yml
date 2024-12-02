@@ -14,6 +14,7 @@
   ansible.builtin.authorized_key:
     user: ansible
     key: "{{ lookup('file', prep_hosts_path) }}"
+  when: manage_service_account | default(true)
 
 - name: Make ansible sudo password-less
   ansible.builtin.lineinfile:
@@ -21,7 +22,9 @@
     state: "present"
     regexp: "^%ansible"
     line: "%ansible ALL=(ALL) NOPASSWD: ALL"
-  when: service_account_nopasswd | default(true)
+  when:
+    - manage_service_account | default(true)
+    - service_account_nopasswd | default(true)
 
 - name: Configure Hostname
   ansible.builtin.hostname:
